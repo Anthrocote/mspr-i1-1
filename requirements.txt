@@ -1,0 +1,10 @@
+pandas
+pyarrow
+requests
+jupyter
+openpyxl
+matplotlib
+seaborn
+beautifulsoup4
+lxml
+chardet

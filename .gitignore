@@ -1,0 +1,11 @@
+# Données
+data/
+
+# Claude Code
+.claude/
+.mcp.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
