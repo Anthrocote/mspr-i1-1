@@ -321,8 +321,8 @@ def aggregate_crimes(comm, dep, cog_map, ref_communes):
     Agrège la criminalité en 3 grandes catégories, applique le fallback
     départemental pour les communes sous secret statistique.
     """
-    comm = harmonize_codgeo(comm, "CODGEO_2024", cog_map)
-    comm = comm.rename(columns={"CODGEO_2024": "CODGEO"})
+    comm = harmonize_codgeo(comm, "CODGEO_2025", cog_map)
+    comm = comm.rename(columns={"CODGEO_2025": "CODGEO"})
 
     # Mapper indicateurs -> catégories
     comm["categorie"] = comm["indicateur"].map(CRIME_CATEGORIES)
