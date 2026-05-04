@@ -435,7 +435,7 @@ def feature_engineering_avance(df: pd.DataFrame, cibles: list) -> pd.DataFrame:
             df.drop(columns=["densite_services"], inplace=True)
             print(" -> ÉCARTÉ")
     else:
-        print("  densite_services: pas de colonnes BPE disponibles → ignoré")
+        print("  densite_services: pas de colonnes BPE disponibles -> ignore")
 
     # 4. Pression associative relative
     comps = ["densite_associative", "taux_chomage"]
@@ -488,7 +488,7 @@ def transformer(
             ]
             df.drop(columns=[feat], inplace=True)
             nb_transformees += 1
-            print(f"  {feat} → {new_col}  (skew {skew_avant:.2f} → {skew_apres:.2f})")
+            print(f"  {feat} -> {new_col}  (skew {skew_avant:.2f} -> {skew_apres:.2f})")
         else:
             df.drop(columns=[new_col], inplace=True)
             print(f"  {feat}: ignoré (gain insuffisant, skew={skew_avant:.2f})")
@@ -533,7 +533,7 @@ def selection_finale(
 
     features_finales = [f for f in feats_dispo if f not in exclues_stat]
 
-    print(f"  {len(feats_dispo)} features → {len(features_finales)} retenues")
+    print(f"  {len(feats_dispo)} features -> {len(features_finales)} retenues")
     print(f"  Liste finale:\n    " + "\n    ".join(sorted(features_finales)))
 
     # Sauvegarder
