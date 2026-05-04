@@ -514,21 +514,19 @@ def compute_features(table):
     t = table.copy()
 
     # Participation
-    t["taux_abstention"] = (t["abstentions"] / t["inscrits"] * 100).round(2)
+    t["taux_abstention"] = (t["abstentions"] / t["inscrits"].replace(0, np.nan) * 100).round(2)
     t["taux_blancs_nuls"] = (
-        (t["blancs"].fillna(0) + t["nuls"]) / t["votants"] * 100
+        (t["blancs"].fillna(0) + t["nuls"]) / t["votants"].replace(0, np.nan) * 100
     ).round(2)
 
     # Parts par famille politique (% des exprimés)
-    familles = [
-        c for c in t.columns if c.startswith("F") and "_" in c and c[1].isdigit()
-    ]
+    familles = [c for c in t.columns if c in set(CANDIDAT_FAMILLE.values())]
     for f in familles:
-        t[f"pct_{f}"] = (t[f] / t["exprimes"] * 100).round(2)
+        t[f"pct_{f}"] = (t[f] / t["exprimes"].replace(0, np.nan) * 100).round(2)
 
     # Emploi / chômage
-    t["taux_chomage"] = (t["P_CHOM1564"] / t["P_ACT1564"] * 100).round(2)
-    t["taux_activite"] = (t["P_ACT1564"] / t["P_POP1564"] * 100).round(2)
+    t["taux_chomage"] = (t["P_CHOM1564"] / t["P_ACT1564"].replace(0, np.nan) * 100).round(2)
+    t["taux_activite"] = (t["P_ACT1564"] / t["P_POP1564"].replace(0, np.nan) * 100).round(2)
 
     # Diplômes
     # P22 a SUP2 + SUP34 + SUP5 (3 niveaux). P16 a SUP (1 seul niveau).
@@ -548,33 +546,33 @@ def compute_features(table):
     if "P_NSCOL15P_SUP" in t.columns:
         mask_sup_only = t["_sup_total"].isna() & t["P_NSCOL15P_SUP"].notna()
         t.loc[mask_sup_only, "_sup_total"] = t.loc[mask_sup_only, "P_NSCOL15P_SUP"]
-    t["pct_diplome_sup"] = (t["_sup_total"] / t["P_NSCOL15P"] * 100).round(2)
+    t["pct_diplome_sup"] = (t["_sup_total"] / t["P_NSCOL15P"].replace(0, np.nan) * 100).round(2)
     t = t.drop(columns=["_sup_total"])
-    t["pct_sans_diplome"] = (t["P_NSCOL15P_DIPLMIN"] / t["P_NSCOL15P"] * 100).round(2)
+    t["pct_sans_diplome"] = (t["P_NSCOL15P_DIPLMIN"] / t["P_NSCOL15P"].replace(0, np.nan) * 100).round(2)
 
     # CSP
     if "C_ACTOCC1564_STAT_GSEC13" in t.columns:
         t["pct_cadres"] = (
-            t["C_ACTOCC1564_STAT_GSEC13"] / t["P_ACTOCC1564"] * 100
+            t["C_ACTOCC1564_STAT_GSEC13"] / t["P_ACTOCC1564"].replace(0, np.nan) * 100
         ).round(2)
     if "C_ACTOCC1564_STAT_GSEC16" in t.columns:
         t["pct_ouvriers"] = (
-            t["C_ACTOCC1564_STAT_GSEC16"] / t["P_ACTOCC1564"] * 100
+            t["C_ACTOCC1564_STAT_GSEC16"] / t["P_ACTOCC1564"].replace(0, np.nan) * 100
         ).round(2)
 
     # Logement
-    t["taux_logements_vacants"] = (t["P_LOGVAC"] / t["P_LOG"] * 100).round(2)
-    t["pct_proprietaires"] = (t["P_RP_PROP"] / t["P_RP"] * 100).round(2)
-    t["pct_hlm"] = (t["P_RP_LOCHLMV"] / t["P_RP"] * 100).round(2)
+    t["taux_logements_vacants"] = (t["P_LOGVAC"] / t["P_LOG"].replace(0, np.nan) * 100).round(2)
+    t["pct_proprietaires"] = (t["P_RP_PROP"] / t["P_RP"].replace(0, np.nan) * 100).round(2)
+    t["pct_hlm"] = (t["P_RP_LOCHLMV"] / t["P_RP"].replace(0, np.nan) * 100).round(2)
 
     # Ménages
     if "C_MEN" in t.columns:
-        t["pct_menages_seuls"] = (t["C_MENPSEUL"] / t["C_MEN"] * 100).round(2)
-        t["pct_familles_mono"] = (t["C_MENFAMMONO"] / t["C_MEN"] * 100).round(2)
+        t["pct_menages_seuls"] = (t["C_MENPSEUL"] / t["C_MEN"].replace(0, np.nan) * 100).round(2)
+        t["pct_familles_mono"] = (t["C_MENFAMMONO"] / t["C_MEN"].replace(0, np.nan) * 100).round(2)
 
     # Densité associative (associations / 1000 hab)
     t["densite_associative"] = (
-        t["nb_associations"].fillna(0) / t["P_POP"] * 1000
+        t["nb_associations"].fillna(0) / t["P_POP"].replace(0, np.nan) * 1000
     ).round(2)
 
     # Solde naturel (pour l'année correspondante)
@@ -604,10 +602,7 @@ def compute_features(table):
         ("public", "C_EMPLT_APESAS"),
     ]:
         if col in t.columns:
-            t[f"pct_emploi_{sector}"] = (t[col] / t["P_EMPLT"] * 100).round(2)
-
-    if "RD21" in t.columns:
-        t["RD21"] = pd.to_numeric(t["RD21"], errors="coerce")
+            t[f"pct_emploi_{sector}"] = (t[col] / t["P_EMPLT"].replace(0, np.nan) * 100).round(2)
 
     print(f"  Features calculées: {t.shape[1]} colonnes total")
     return t
@@ -622,7 +617,8 @@ def validate(table):
     print(f"Lignes par année: {table.groupby('annee').size().to_dict()}")
 
     # Vérifier que les % par famille somment à ~100%
-    fam_pct = [c for c in table.columns if c.startswith("pct_F")]
+    _familles_set = {f"pct_{fam}" for fam in set(CANDIDAT_FAMILLE.values())}
+    fam_pct = [c for c in table.columns if c in _familles_set]
     if fam_pct:
         total_pct = table[fam_pct].sum(axis=1)
         print(
