@@ -11,3 +11,5 @@ chardet
 scipy
 scikit-learn
 numpy
+joblib
+pytest
