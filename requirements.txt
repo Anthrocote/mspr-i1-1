@@ -8,3 +8,8 @@ seaborn
 beautifulsoup4
 lxml
 chardet
+scipy
+scikit-learn
+numpy
+joblib
+pytest

@@ -243,22 +243,22 @@ def extract_dossier_complet():
 def extract_crimes():
     print("=== Criminalité ===")
     cols = [
-        "CODGEO_2024",
+        "CODGEO_2025",
         "annee",
         "indicateur",
         "nombre",
         "taux_pour_mille",
         "est_diffuse",
     ]
-    df = pd.read_parquet(
-        RAW
-        / "criminalite"
-        / "donnee-comm-data.gouv-parquet-2024-geographie2024-produit-le2025-03-14.parquet",
-        columns=cols,
-    )
+    comm_files = sorted(RAW.glob("criminalite/donnee-comm-*.parquet"))
+    if not comm_files:
+        print("  ERREUR: aucun fichier parquet criminalité communale trouvé")
+        return
+    print(f"  Fichier communal: {comm_files[-1].name}")
+    df = pd.read_parquet(comm_files[-1], columns=cols)
     # Garder les années pertinentes pour scrutins 2017 et 2022
     df = df[df["annee"].isin([2016, 2017, 2021, 2022])]
-    print(f"  {df.shape[0]} lignes, {df['CODGEO_2024'].nunique()} communes")
+    print(f"  {df.shape[0]} lignes, {df['CODGEO_2025'].nunique()} communes")
     df.to_parquet(STAGING / "criminalite.parquet", index=False)
     print(f"  -> {STAGING / 'criminalite.parquet'}")
 
@@ -339,19 +339,22 @@ def extract_referentiels():
     print(f"  Communes: {comm.shape[0]} lignes -> ref_communes.parquet")
 
     # Départements
-    dept = pd.read_csv(RAW / "referentiels" / "v_departement_2025.csv")
+    dept_files = sorted(RAW.glob("referentiels/v_departement_*.csv"))
+    dept = pd.read_csv(dept_files[-1])
     dept = dept[["DEP", "REG", "LIBELLE"]]
     dept.to_parquet(STAGING / "ref_departements.parquet", index=False)
     print(f"  Départements: {dept.shape[0]} lignes -> ref_departements.parquet")
 
     # Régions
-    reg = pd.read_csv(RAW / "referentiels" / "v_region_2025.csv")
+    reg_files = sorted(RAW.glob("referentiels/v_region_*.csv"))
+    reg = pd.read_csv(reg_files[-1])
     reg = reg[["REG", "LIBELLE"]]
     reg.to_parquet(STAGING / "ref_regions.parquet", index=False)
     print(f"  Régions: {reg.shape[0]} lignes -> ref_regions.parquet")
 
     # Mouvements communes
-    mvt = pd.read_csv(RAW / "referentiels" / "v_mvt_commune_2025.csv")
+    mvt_files = sorted(RAW.glob("referentiels/v_mvt_commune_*.csv"))
+    mvt = pd.read_csv(mvt_files[-1])
     mvt.to_parquet(STAGING / "ref_mvt_communes.parquet", index=False)
     print(f"  Mouvements: {mvt.shape[0]} lignes -> ref_mvt_communes.parquet")
 

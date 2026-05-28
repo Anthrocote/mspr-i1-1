@@ -1,6 +1,9 @@
 # Données
 data/
 
+# Modèles sérialisés (trop lourds pour GitHub)
+models/
+
 # Claude Code
 .claude/
 .mcp.json
@@ -9,3 +12,4 @@ data/
 __pycache__/
 *.pyc
 .venv/
+.idea
